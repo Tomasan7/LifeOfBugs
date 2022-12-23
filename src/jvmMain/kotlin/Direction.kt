@@ -1,9 +1,9 @@
 enum class Direction(val degrees: Int)
 {
     UP(0),
-    RIGHT(90),
+    LEFT(90),
     DOWN(180),
-    LEFT(270);
+    RIGHT(270);
 
     fun left() = when (this)
     {
