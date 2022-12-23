@@ -75,4 +75,53 @@ class ViewModel(val gameConfig: GameConfig)
 
         bugs = newBugs
     }
+
+    fun getSurroundings(bug: Bug): Surroundings
+    {
+        val bugIndex = bugs.indexOf(bug)
+
+        val northIndex = bugIndex - gameConfig.width
+        val eastIndex = bugIndex + 1
+        val southIndex = bugIndex + gameConfig.width
+        val westIndex = bugIndex - 1
+
+        val frontIndex = when (bug.orientation)
+        {
+            Orientation.UP -> northIndex
+            Orientation.DOWN -> southIndex
+            Orientation.LEFT -> westIndex
+            Orientation.RIGHT -> eastIndex
+        }
+
+        val rightIndex = when (bug.orientation)
+        {
+            Orientation.UP -> eastIndex
+            Orientation.DOWN -> westIndex
+            Orientation.LEFT -> northIndex
+            Orientation.RIGHT -> southIndex
+        }
+
+        val leftIndex = when (bug.orientation)
+        {
+            Orientation.UP -> westIndex
+            Orientation.DOWN -> eastIndex
+            Orientation.LEFT -> southIndex
+            Orientation.RIGHT -> northIndex
+        }
+
+        val backIndex = when (bug.orientation)
+        {
+            Orientation.UP -> southIndex
+            Orientation.DOWN -> northIndex
+            Orientation.LEFT -> eastIndex
+            Orientation.RIGHT -> westIndex
+        }
+
+        return Surroundings(
+            front = bugs.getOrNull(frontIndex),
+            right = bugs.getOrNull(rightIndex),
+            left = bugs.getOrNull(leftIndex),
+            back = bugs.getOrNull(backIndex)
+        )
+    }
 }
