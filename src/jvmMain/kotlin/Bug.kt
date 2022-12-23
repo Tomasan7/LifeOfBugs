@@ -3,7 +3,7 @@ import androidx.compose.ui.graphics.Color
 data class Bug(
     val id: Int,
     val name: String,
-    val score: Int,
+    val score: Int = 0,
     val orientation: Orientation = Orientation.UP,
     val color: Color
 )

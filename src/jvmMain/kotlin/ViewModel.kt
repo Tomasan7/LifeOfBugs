@@ -26,7 +26,7 @@ class ViewModel(val gameConfig: GameConfig)
             newBugs[availableIndex] = Bug(
                 id = it,
                 name = randomName(),
-                score = 1,
+                score = 0,
                 orientation = Orientation.random(),
                 color = Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
             )
