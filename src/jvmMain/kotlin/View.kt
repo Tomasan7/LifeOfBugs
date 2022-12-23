@@ -62,21 +62,27 @@ fun Scoreboard(bugs: List<Bug?>)
         val bugsNonNullSorted = bugs.filterNotNull().sortedBy { it.name }.sortedByDescending { it.score }.take(10)
 
         val half = bugsNonNullSorted.size / 2f
-        val firstHalf = ceil(half)
+        val firstHalfSize = half.ceil()
+        val secondHalfSize = half.floor()
 
-        bugsNonNullSorted.chunked(bugsNonNullSorted.size / 2)
+        val firstHalf = bugsNonNullSorted.subList(0, firstHalfSize)
+        val secondHalf = bugsNonNullSorted.subList(firstHalfSize, firstHalfSize + secondHalfSize)
+
+        listOf(firstHalf, secondHalf)
     }
 
     Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-        bugsSortedColumns.forEachIndexed { columnIndex, bugsSortedColumn ->
+        var place = 1
+        bugsSortedColumns.forEach { bugsSortedColumn ->
             Column {
-                bugsSortedColumn.forEachIndexed { bugIndex, bug ->
-                    val place = columnIndex * bugsSortedColumn.size + bugIndex + 1
+                bugsSortedColumn.forEach { bug ->
                     Text(
                         "$place. ${bug.name} (${bug.score})",
                         color = bug.color,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp)
+
+                    place++
                 }
             }
         }
