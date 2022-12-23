@@ -118,7 +118,7 @@ fun Bug(bug: Bug, onClick: () -> Unit = {}, onLongClick: () -> Unit = {}, modifi
                     modifier = modifier.rotate(animatedRotation)
                 )
 
-                Text(bug.score.toString())
+                Text(bug.score.toString(), color = textColor(bug.color))
             }
         }
     }
