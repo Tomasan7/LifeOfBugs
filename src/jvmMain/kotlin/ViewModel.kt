@@ -10,7 +10,7 @@ class ViewModel(val gameConfig: GameConfig)
 
     init
     {
-        setRandomBugs(5)
+        setRandomBugs(50)
     }
 
     private fun setRandomBugs(amount: Int)
