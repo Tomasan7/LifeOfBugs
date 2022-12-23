@@ -89,6 +89,7 @@ fun Bug(bug: Bug, onClick: () -> Unit = {}, onLongClick: () -> Unit = {}, modifi
 {
     key(bug.id) {
         TooltipArea(
+            delayMillis = 0,
             tooltip = {
                 Surface(elevation = 5.dp, shape = RoundedCornerShape(4.dp), color = bug.color) {
                     Box(Modifier.padding(2.dp)) {
