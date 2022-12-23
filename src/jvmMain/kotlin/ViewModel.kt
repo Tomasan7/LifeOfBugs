@@ -4,7 +4,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import kotlin.random.Random
 
-class ViewModel(val gameConfig: GameConfig)
+class ViewModel(val gameConfig: GameConfig, private val brain: Brain)
 {
     var bugs by mutableStateOf(emptyList<Bug?>())
 
@@ -27,7 +27,7 @@ class ViewModel(val gameConfig: GameConfig)
                 id = it,
                 name = randomName(),
                 score = 0,
-                orientation = Orientation.random(),
+                orientation = Direction.random(),
                 color = Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
             )
         }
@@ -44,98 +44,94 @@ class ViewModel(val gameConfig: GameConfig)
     fun moveBugAndEat(bug: Bug, move: Move)
     {
         val bugIndex = bugs.indexOf(bug)
+        val newIndex: Int
+        val newBug: Bug
 
-        val desiredDestination = when (move)
+        if (move == Move.FORWARD)
         {
-            Move.FORWARD -> when (bug.orientation)
+            /* desiredNewIndex is null, when it's out of border. */
+            val desiredNewIndex = getRelative(bugIndex, bug.orientation) ?: return
+
+            val bugOnIndex = bugs[desiredNewIndex]
+            val newScore = if (bugOnIndex == null) bug.score else bug.score + 1
+
+            newIndex = desiredNewIndex
+            newBug = bug.copy(score = newScore)
+        }
+        else
+        {
+            newIndex = bugIndex
+            newBug = when (move)
             {
-                Orientation.UP    -> bugIndex - gameConfig.width
-                Orientation.DOWN  -> bugIndex + gameConfig.width
-                Orientation.LEFT  -> bugIndex - 1
-                Orientation.RIGHT -> bugIndex + 1
+                Move.ROTATE_LEFT -> bug.rotateLeft()
+                Move.ROTATE_RIGHT -> bug.rotateRight()
+                else -> bug
             }
-
-            Move.ROTATE_LEFT,
-            Move.ROTATE_RIGHT,
-            Move.STAY    -> bugIndex
         }
 
-        val rowsBefore = bugIndex / gameConfig.width
-        val rowLocalDesiredDestination = desiredDestination - rowsBefore * gameConfig.width
-
-        val movePossible = when
+        if (newIndex != bugIndex)
         {
-            move == Move.FORWARD && (bug.orientation == Orientation.UP || bug.orientation == Orientation.DOWN)    -> desiredDestination in bugs.indices
-            move == Move.FORWARD && (bug.orientation == Orientation.RIGHT || bug.orientation == Orientation.LEFT)  -> rowLocalDesiredDestination in 0 until gameConfig.width
-            else -> true
+            bugs = bugs.toMutableList().apply {
+                this[bugIndex] = null
+                this[newIndex] = newBug
+            }
         }
-
-        if (!movePossible)
-            return
-
-        val bugOnLocation = bugs[desiredDestination]
-
-        val newSize = if (bugOnLocation != null) bug.score + 1 else bug.score
-
-        val newBug = bug.copy(
-            score = newSize,
-            orientation = bug.orientation
-        )
-
-        val newBugs = bugs.toMutableList()
-
-        newBugs[bugIndex] = null
-        newBugs[desiredDestination] = newBug
-
-        bugs = newBugs
+        else
+            bugs = bugs.toMutableList().apply { this[bugIndex] = newBug }
     }
 
-    fun getSurroundings(bug: Bug): Surroundings
+    /**
+     * @return the index relative to the [index] in [direction]. Or null, if it's out of border.
+     */
+    private fun getRelative(index: Int, direction: Direction): Int?
+    {
+        val destination = when (direction)
+        {
+            Direction.UP    -> index - gameConfig.width
+            Direction.DOWN  -> index + gameConfig.width
+            Direction.LEFT  -> index - 1
+            Direction.RIGHT -> index + 1
+        }
+
+        val rowsBefore = index / gameConfig.width
+        val rowLocalDestination = destination - rowsBefore * gameConfig.width
+
+        val moveInBounds = when (direction)
+        {
+            Direction.UP, Direction.DOWN    -> destination in bugs.indices
+            Direction.RIGHT, Direction.LEFT -> rowLocalDestination in 0 until gameConfig.width
+        }
+
+        if (moveInBounds)
+            return destination
+        else
+            return null
+    }
+
+    private fun getSurroundings(bug: Bug): Surroundings
     {
         val bugIndex = bugs.indexOf(bug)
 
-        val northIndex = bugIndex - gameConfig.width
-        val eastIndex = bugIndex + 1
-        val southIndex = bugIndex + gameConfig.width
-        val westIndex = bugIndex - 1
-
-        val frontIndex = when (bug.orientation)
-        {
-            Orientation.UP -> northIndex
-            Orientation.DOWN -> southIndex
-            Orientation.LEFT -> westIndex
-            Orientation.RIGHT -> eastIndex
-        }
-
-        val rightIndex = when (bug.orientation)
-        {
-            Orientation.UP -> eastIndex
-            Orientation.DOWN -> westIndex
-            Orientation.LEFT -> northIndex
-            Orientation.RIGHT -> southIndex
-        }
-
-        val leftIndex = when (bug.orientation)
-        {
-            Orientation.UP -> westIndex
-            Orientation.DOWN -> eastIndex
-            Orientation.LEFT -> southIndex
-            Orientation.RIGHT -> northIndex
-        }
-
-        val backIndex = when (bug.orientation)
-        {
-            Orientation.UP -> southIndex
-            Orientation.DOWN -> northIndex
-            Orientation.LEFT -> eastIndex
-            Orientation.RIGHT -> westIndex
-        }
-
         return Surroundings(
-            front = bugs.getOrNull(frontIndex),
-            right = bugs.getOrNull(rightIndex),
-            left = bugs.getOrNull(leftIndex),
-            back = bugs.getOrNull(backIndex)
+            front = getRelative(bugIndex, bug.orientation)?.let { bugs[it] },
+            right = getRelative(bugIndex, bug.orientation.right())?.let { bugs[it] },
+            left = getRelative(bugIndex, bug.orientation.left())?.let { bugs[it] },
+            back = getRelative(bugIndex, bug.orientation.opposite())?.let { bugs[it] }
         )
+    }
+
+    fun cycle()
+    {
+        for (i in bugs.indices)
+        {
+            val bug = bugs.getOrNull(i) ?: continue
+
+            val surroundings = getSurroundings(bug)
+
+            val move = brain.calculateMove(bug, surroundings)
+
+            if (move != null)
+                moveBugAndEat(bug, move)
+        }
     }
 }

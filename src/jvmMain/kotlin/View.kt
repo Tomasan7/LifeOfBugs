@@ -2,6 +2,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
@@ -20,7 +21,7 @@ import kotlin.math.ceil
 @Composable
 fun Game()
 {
-    val viewModel = remember { ViewModel(GameConfig(10, 10)) }
+    val viewModel = remember { ViewModel(GameConfig(10, 10), SimpleBrain()) }
     val gameConfig = viewModel.gameConfig
 
     var bugDialogViewed by remember { mutableStateOf(false) }
@@ -47,6 +48,10 @@ fun Game()
         Spacer(Modifier.height(50.dp))
 
         Scoreboard(viewModel.bugs)
+
+        Button(onClick = { viewModel.cycle()}) {
+            Text("Cycle")
+        }
     }
 
     if (bugDialogViewed && dialogBug != null)
