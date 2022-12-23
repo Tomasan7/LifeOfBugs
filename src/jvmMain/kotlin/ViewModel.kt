@@ -54,8 +54,9 @@ class ViewModel(val gameConfig: GameConfig)
                 Orientation.LEFT -> bugIndex - 1
                 Orientation.RIGHT -> bugIndex + 1
             }
-            Move.ROTATE_LEFT -> bugIndex
-            Move.ROTATE_RIGHT -> bugIndex
+            Move.ROTATE_LEFT,
+            Move.ROTATE_RIGHT,
+            Move.STAY -> bugIndex
         }
 
         val bugOnLocation = bugs[newBugIndex]
