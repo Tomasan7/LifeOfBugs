@@ -45,21 +45,35 @@ class ViewModel(val gameConfig: GameConfig)
     {
         val bugIndex = bugs.indexOf(bug)
 
-        val newBugIndex = when (move)
+        val desiredDestination = when (move)
         {
             Move.FORWARD -> when (bug.orientation)
             {
-                Orientation.UP -> bugIndex - gameConfig.width
-                Orientation.DOWN -> bugIndex + gameConfig.width
-                Orientation.LEFT -> bugIndex - 1
+                Orientation.UP    -> bugIndex - gameConfig.width
+                Orientation.DOWN  -> bugIndex + gameConfig.width
+                Orientation.LEFT  -> bugIndex - 1
                 Orientation.RIGHT -> bugIndex + 1
             }
+
             Move.ROTATE_LEFT,
             Move.ROTATE_RIGHT,
-            Move.STAY -> bugIndex
+            Move.STAY    -> bugIndex
         }
 
-        val bugOnLocation = bugs[newBugIndex]
+        val rowsBefore = bugIndex / gameConfig.width
+        val rowLocalDesiredDestination = desiredDestination - rowsBefore * gameConfig.width
+
+        val movePossible = when
+        {
+            move == Move.FORWARD && (bug.orientation == Orientation.UP || bug.orientation == Orientation.DOWN)    -> desiredDestination in bugs.indices
+            move == Move.FORWARD && (bug.orientation == Orientation.RIGHT || bug.orientation == Orientation.LEFT)  -> rowLocalDesiredDestination in 0 until gameConfig.width
+            else -> true
+        }
+
+        if (!movePossible)
+            return
+
+        val bugOnLocation = bugs[desiredDestination]
 
         val newSize = if (bugOnLocation != null) bug.score + 1 else bug.score
 
@@ -71,7 +85,7 @@ class ViewModel(val gameConfig: GameConfig)
         val newBugs = bugs.toMutableList()
 
         newBugs[bugIndex] = null
-        newBugs[newBugIndex] = newBug
+        newBugs[desiredDestination] = newBug
 
         bugs = newBugs
     }
