@@ -9,19 +9,26 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.*
 import kotlin.math.ceil
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun Game()
+fun Game(applicationScope: ApplicationScope)
 {
     val viewModel = remember { ViewModel(GameConfig(10, 10), SimpleBrain()) }
     val gameConfig = viewModel.gameConfig
@@ -29,37 +36,48 @@ fun Game()
     var bugDialogViewed by remember { mutableStateOf(false) }
     var dialogBug by remember { mutableStateOf<Bug?>(null) }
 
-    Column {
-        repeat(gameConfig.height) { y ->
-            Row {
-                repeat(gameConfig.width) { x ->
-                    val bug = viewModel.bugs[y * gameConfig.width + x]
-                    if (bug != null)
-                        Bug(
-                            bug = bug,
-                            onClick = { viewModel.updateBug(bug, bug.rotateLeft()) },
-                            onLongClick = { viewModel.moveBugAndEat(bug, Move.FORWARD) },
-                            modifier = Modifier.size(50.dp)
-                        )
-                    else
-                        Box(modifier = Modifier.size(50.dp))
+    Window(
+        onCloseRequest = applicationScope::exitApplication,
+        title = "Bug Game",
+        icon = painterResource("bug.png"),
+        state = WindowState(size = DpSize(550.dp, 800.dp)),
+        onKeyEvent = { keyEvent ->
+            if (keyEvent.key == Key.Spacebar && keyEvent.type == KeyEventType.KeyDown)
+                viewModel.cycle()
+            true
+        }) {
+        Column {
+            repeat(gameConfig.height) { y ->
+                Row {
+                    repeat(gameConfig.width) { x ->
+                        val bug = viewModel.bugs[y * gameConfig.width + x]
+                        if (bug != null)
+                            Bug(
+                                bug = bug,
+                                onClick = { viewModel.updateBug(bug, bug.rotateLeft()) },
+                                onLongClick = { viewModel.moveBugAndEat(bug, Move.FORWARD) },
+                                modifier = Modifier.size(50.dp)
+                            )
+                        else
+                            Box(modifier = Modifier.size(50.dp))
+                    }
                 }
+            }
+
+            Spacer(Modifier.height(50.dp))
+
+            Scoreboard(viewModel.bugs)
+
+            Button(onClick = { viewModel.cycle() }) {
+                Text("Cycle")
             }
         }
 
-        Spacer(Modifier.height(50.dp))
-
-        Scoreboard(viewModel.bugs)
-
-        Button(onClick = { viewModel.cycle()}) {
-            Text("Cycle")
-        }
+        if (bugDialogViewed && dialogBug != null)
+            Dialog(onCloseRequest = { bugDialogViewed = false }) {
+                Text(dialogBug!!.name)
+            }
     }
-
-    if (bugDialogViewed && dialogBug != null)
-        Dialog(onCloseRequest = { bugDialogViewed = false }) {
-            Text(dialogBug!!.name)
-        }
 }
 
 @Composable
