@@ -13,7 +13,7 @@ class ViewModel(val gameConfig: GameConfig)
         setRandomBugs(100)
     }
 
-    private fun setRandomBugs(amount: Int)
+    fun setRandomBugs(amount: Int)
     {
         val newBugs = arrayOfNulls<Bug?>(gameConfig.size)
 

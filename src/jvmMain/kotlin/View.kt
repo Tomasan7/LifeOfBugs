@@ -71,6 +71,10 @@ fun Game(applicationScope: ApplicationScope)
             Button(onClick = { viewModel.cycle() }) {
                 Text("Cycle")
             }
+
+            Button(onClick = { viewModel.setRandomBugs(gameConfig.size) }) {
+                Text("Restart")
+            }
         }
 
         if (bugDialogViewed && dialogBug != null)
