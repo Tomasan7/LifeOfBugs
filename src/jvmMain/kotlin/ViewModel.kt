@@ -54,10 +54,9 @@ class ViewModel(val gameConfig: GameConfig, private val brain: Brain)
             val desiredNewIndex = getRelative(bugIndex, bug.orientation) ?: return
 
             val bugOnIndex = bugs[desiredNewIndex]
-            val newScore = if (bugOnIndex == null) bug.score else bug.score + 1
 
             newIndex = desiredNewIndex
-            newBug = bug.copy(score = newScore)
+            newBug = if (bugOnIndex == null) bug else bug.grow()
         }
         else
         {
