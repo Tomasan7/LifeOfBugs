@@ -123,9 +123,11 @@ class ViewModel(val gameConfig: GameConfig, private val brain: Brain)
 
     fun cycle()
     {
-        for (i in bugs.indices)
+        val bugsIdsToProcessIterator = bugs.filterNotNull().map { it.id }.toMutableSet().iterator()
+
+        for (bugId in bugsIdsToProcessIterator)
         {
-            val bug = bugs.getOrNull(i) ?: continue
+            val bug = bugs.find { it?.id == bugId } ?: continue
 
             val surroundings = getSurroundings(bug)
 
@@ -133,6 +135,8 @@ class ViewModel(val gameConfig: GameConfig, private val brain: Brain)
 
             if (move != null)
                 moveBugAndEat(bug, move)
+
+            bugsIdsToProcessIterator.remove()
         }
     }
 }
