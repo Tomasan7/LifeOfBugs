@@ -143,7 +143,8 @@ class ViewModel(val gameConfig: GameConfig)
     companion object
     {
         val BRAINS = setOf(
-            SimpleBrain()
+            SimpleBrain(),
+            AggressiveBrain(),
         )
     }
 }
