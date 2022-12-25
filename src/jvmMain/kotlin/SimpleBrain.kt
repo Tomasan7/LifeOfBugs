@@ -13,4 +13,6 @@ class SimpleBrain : Brain
 
         return Move.ROTATE_LEFT
     }
+
+    override fun getBrainName() = "SimpleBrain"
 }

@@ -6,4 +6,6 @@ interface Brain
      * @return The move, or `null`, if it should not move.
      */
     fun calculateMove(bug: Bug, surroundings: Surroundings): Move?
+
+    fun getBrainName(): String
 }
