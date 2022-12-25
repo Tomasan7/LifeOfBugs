@@ -4,7 +4,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import kotlin.random.Random
 
-class ViewModel(val gameConfig: GameConfig, private val brain: Brain)
+class ViewModel(val gameConfig: GameConfig)
 {
     var bugs by mutableStateOf(emptyList<Bug?>())
 
@@ -29,6 +29,7 @@ class ViewModel(val gameConfig: GameConfig, private val brain: Brain)
                 name = randomName(),
                 score = 0,
                 orientation = Direction.random(),
+                brain = BRAINS.random(),
                 color = Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
             )
         }
@@ -130,12 +131,19 @@ class ViewModel(val gameConfig: GameConfig, private val brain: Brain)
 
             val surroundings = getSurroundings(bug)
 
-            val move = brain.calculateMove(bug, surroundings)
+            val move = bug.brain.calculateMove(bug, surroundings)
 
             if (move != null)
                 moveBugAndEat(bug, move)
 
             bugsIdsToProcessIterator.remove()
         }
+    }
+
+    companion object
+    {
+        val BRAINS = setOf(
+            SimpleBrain()
+        )
     }
 }

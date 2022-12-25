@@ -30,7 +30,7 @@ import kotlin.math.ceil
 @Composable
 fun Game(applicationScope: ApplicationScope)
 {
-    val viewModel = remember { ViewModel(GameConfig(10, 10), SimpleBrain()) }
+    val viewModel = remember { ViewModel(GameConfig(10, 10)) }
     val gameConfig = viewModel.gameConfig
 
     var bugDialogViewed by remember { mutableStateOf(false) }
@@ -124,7 +124,7 @@ fun Bug(bug: Bug, onClick: () -> Unit = {}, onLongClick: () -> Unit = {}, modifi
             tooltip = {
                 Surface(elevation = 5.dp, shape = RoundedCornerShape(4.dp), color = bug.color) {
                     Box(Modifier.padding(2.dp)) {
-                        Text(bug.name, color = textColor(bug.color))
+                        Text(bug.name + ": " + bug.brain.getBrainName(), color = textColor(bug.color))
                     }
                 }
             }
