@@ -10,20 +10,21 @@ class ViewModel(val gameConfig: GameConfig, private val brain: Brain)
 
     init
     {
-        setRandomBugs(50)
+        setRandomBugs(100)
     }
 
     private fun setRandomBugs(amount: Int)
     {
         val newBugs = arrayOfNulls<Bug?>(gameConfig.size)
 
-        val availableIndexes = (0 until gameConfig.size).toList()
+        val availableSpots = (0 until gameConfig.size).toMutableList()
 
         repeat(amount) {
-            val availableIndexesIndex = Random.nextInt(gameConfig.size)
-            val availableIndex = availableIndexes[availableIndexesIndex]
+            val availableSpotsIndex = Random.nextInt(availableSpots.size)
+            val availableSpot = availableSpots[availableSpotsIndex]
+            availableSpots.removeAt(availableSpotsIndex)
 
-            newBugs[availableIndex] = Bug(
+            newBugs[availableSpot] = Bug(
                 id = it,
                 name = randomName(),
                 score = 0,
