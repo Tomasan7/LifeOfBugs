@@ -1,7 +1,11 @@
+import androidx.compose.ui.graphics.Color
 import java.io.File
 import kotlin.math.ceil
+import kotlin.random.Random
 
 fun randomName() = namesFile.readLines().random()
+
+fun randomColor() = Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
 
 fun Int.isOdd() = this % 2 != 0
 

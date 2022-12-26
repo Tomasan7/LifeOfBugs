@@ -1,6 +1,6 @@
 data class Surroundings(
-    val front: Bug? = null,
-    val left: Bug? = null,
-    val right: Bug? = null,
-    val back: Bug? = null
+    val front: Tile = Tile.Space,
+    val left: Tile = Tile.Space,
+    val right: Tile = Tile.Space,
+    val back: Tile = Tile.Space
 )
