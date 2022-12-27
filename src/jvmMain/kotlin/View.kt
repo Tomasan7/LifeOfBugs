@@ -3,10 +3,11 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -18,69 +19,71 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
-import kotlin.math.ceil
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun Game(applicationScope: ApplicationScope)
 {
-    val viewModel = remember { ViewModel(GameConfig(10, 10)) }
-    val gameConfig = viewModel.gameConfig
-
-    var bugDialogViewed by remember { mutableStateOf(false) }
-    var dialogBug by remember { mutableStateOf<Bug?>(null) }
+    val gameConfig = remember { GameConfig(10, 10) }
+    val viewModel = remember { ViewModel(gameConfig) }
 
     Window(
         onCloseRequest = applicationScope::exitApplication,
         title = "Bug Game",
         icon = painterResource("bug.png"),
-        state = WindowState(size = DpSize(550.dp, 800.dp)),
+        state = WindowState(size = DpSize(550.dp, 900.dp)),
         onKeyEvent = { keyEvent ->
             if (keyEvent.key == Key.Spacebar && keyEvent.type == KeyEventType.KeyDown)
                 viewModel.cycle()
             true
         }) {
         Column {
-            repeat(gameConfig.height) { y ->
-                Row {
-                    repeat(gameConfig.width) { x ->
-                        val bug = viewModel.bugs[y * gameConfig.width + x]
-                        if (bug != null)
-                            Bug(
-                                bug = bug,
-                                onClick = { viewModel.updateBug(bug, bug.rotateLeft()) },
-                                onLongClick = { viewModel.moveBugAndEat(bug, Move.FORWARD) },
-                                modifier = Modifier.size(50.dp)
-                            )
-                        else
-                            Box(modifier = Modifier.size(50.dp))
+            LazyRow {
+                items(viewModel.map) { clmn ->
+                    LazyColumn {
+                        items(clmn.size) { i ->
+                            /* To reverse the order of the elements. */
+                            val tile = clmn[clmn.size - i - 1]
+                            Tile(tile)
+                        }
                     }
                 }
             }
 
             Spacer(Modifier.height(50.dp))
 
-            Scoreboard(viewModel.bugs)
+            Scoreboard(viewModel.getBugs())
 
             Button(onClick = { viewModel.cycle() }) {
                 Text("Cycle")
             }
 
-            Button(onClick = { viewModel.setRandomBugs(gameConfig.size) }) {
+            Button(onClick = { viewModel.reset() }) {
                 Text("Restart")
             }
-        }
 
-        if (bugDialogViewed && dialogBug != null)
-            Dialog(onCloseRequest = { bugDialogViewed = false }) {
-                Text(dialogBug!!.name)
-            }
+            Slider(
+                modifier = Modifier.fillMaxWidth(),
+                colors = SliderDefaults.colors(
+                    activeTrackColor = Color.Blue,
+                    inactiveTrackColor = Color.Blue
+                ),
+                value = viewModel.speed.toFloat(),
+                onValueChange = { viewModel.setTickSpeed(it.toLong()) },
+                valueRange = 0f..1000f,
+                steps = 100
+            )
+
+            Text("Speed: ${viewModel.speed}ms")
+        }
     }
 }
 
@@ -122,7 +125,8 @@ fun Scoreboard(bugs: List<Bug?>)
 @Composable
 fun Bug(bug: Bug, onClick: () -> Unit = {}, onLongClick: () -> Unit = {}, modifier: Modifier = Modifier)
 {
-    key(bug.id) {
+    key(bug.id)
+    {
         TooltipArea(
             delayMillis = 0,
             tooltip = {
@@ -154,18 +158,32 @@ fun Bug(bug: Bug, onClick: () -> Unit = {}, onLongClick: () -> Unit = {}, modifi
 }
 
 @Composable
+fun Tile(tile: Tile, onClick: () -> Unit = {})
+{
+    when (tile)
+    {
+        is Tile.BugTile -> Bug(tile.bug, modifier = Modifier.size(50.dp), onClick = onClick)
+        is Tile.Wall, Tile.Void -> Box(modifier = Modifier.size(50.dp).background(Color.Black))
+        is Tile.Space -> Box(modifier = Modifier.size(50.dp))
+    }
+}
+
+@Composable
 fun smoothRotation(rotation: Int): State<Float>
 {
     /* https://stackoverflow.com/a/68259116 */
 
     val (lastRotation, setLastRotation) = remember { mutableStateOf(0) } // this keeps last rotation
     var newRotation = lastRotation // newRotation will be updated in proper way
-    val modLast = if (lastRotation > 0) lastRotation % 360 else 360 - (-lastRotation % 360) // last rotation converted to range [-359; 359]
+    val modLast =
+        if (lastRotation > 0) lastRotation % 360 else 360 - (-lastRotation % 360) // last rotation converted to range [-359; 359]
 
     if (modLast != rotation) // if modLast isn't equal rotation retrieved as function argument it means that newRotation has to be updated
     {
-        val backward = if (rotation > modLast) modLast + 360 - rotation else modLast - rotation // distance in degrees between modLast and rotation going backward
-        val forward = if (rotation > modLast) rotation - modLast else 360 - modLast + rotation // distance in degrees between modLast and rotation going forward
+        val backward =
+            if (rotation > modLast) modLast + 360 - rotation else modLast - rotation // distance in degrees between modLast and rotation going backward
+        val forward =
+            if (rotation > modLast) rotation - modLast else 360 - modLast + rotation // distance in degrees between modLast and rotation going forward
 
         // update newRotation so it will change rotation in the shortest way
         newRotation = if (backward < forward)

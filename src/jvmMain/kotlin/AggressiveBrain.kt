@@ -2,16 +2,16 @@ class AggressiveBrain: Brain
 {
     override fun calculateMove(bug: Bug, surroundings: Surroundings): Move
     {
-        if (surroundings.front != null)
+        if (surroundings.front is Tile.BugTile)
             return Move.FORWARD
 
-        if (surroundings.right != null)
+        if (surroundings.right is Tile.BugTile)
             return Move.ROTATE_RIGHT
 
-        if (surroundings.left != null)
+        if (surroundings.left is Tile.BugTile)
             return Move.ROTATE_LEFT
 
-        if (surroundings.back != null)
+        if (surroundings.back is Tile.BugTile)
             return Move.ROTATE_RIGHT
 
         return Move.FORWARD

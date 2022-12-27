@@ -1,17 +1,43 @@
 import Tile.Space.tile
 
-class Game(private val gameConfig: GameConfig)
+class Game(val gameConfig: GameConfig)
 {
     private val map: Array<Array<Tile>> = Array(gameConfig.width) { Array(gameConfig.height) { Tile.Space } }
+    private val allPositions = run {
+        val positions = mutableListOf<Pos>()
 
-    fun getMap() = map.map { it.toList() }
+        for (x in 0 until gameConfig.width)
+            for (y in 0 until gameConfig.height)
+                positions.add(Pos(x, y))
+
+        positions.toList()
+    }
+
+    fun getMapCopy() = map.map { it.map { tile -> if (tile is Tile.BugTile) tile.bug.copy().tile() else tile } }
 
     private fun setTile(pos: Pos, tile: Tile)
     {
         map[pos.x][pos.y] = tile
     }
 
+    fun clearBugs()
+    {
+        for (pos in allPositions)
+        {
+            val tile = getTile(pos)
+
+            if (tile is Tile.BugTile)
+                setTile(pos, Tile.Space)
+        }
+    }
+
     fun setRandomBugs(amount: Int)
+    {
+        clearBugs()
+        fillRandomBugs(amount)
+    }
+
+    fun fillRandomBugs(amount: Int)
     {
         val availablePositions = mutableSetOf(
             *map.indices.flatMap { x -> map[x].indices.filter { map[x][it] is Tile.Space }.map { y -> Pos(x, y) } }.toTypedArray()
@@ -67,7 +93,7 @@ class Game(private val gameConfig: GameConfig)
 
     fun isMovePossibleWhileEating(pos: Pos, direction: Direction) = isMovePossible(pos, direction, true)
 
-    fun getBugTile(bugPos: Pos) = getTile(bugPos) as? Tile.BugTile ?: throw IllegalArgumentException("There is no bug at $bugPos")
+    fun getBugTile(bugPos: Pos) = getTile(bugPos) as? Tile.BugTile ?: throw NoBugAtPosException(bugPos)
 
     fun getBug(bugPos: Pos) = getBugTile(bugPos).bug
 
@@ -102,6 +128,41 @@ class Game(private val gameConfig: GameConfig)
 
         if (shouldEat && bugAtDestination != null)
             bug.grow()
+    }
+
+    fun cycle()
+    {
+        val processedBugs = mutableSetOf<Bug>()
+        val positionsToProcess = getBugPositions()
+
+        for (bugPos in positionsToProcess)
+        {
+            try
+            {
+                val bug = getBug(bugPos)
+                processBug(bugPos)
+                processedBugs.add(bug)
+            }
+            catch (ignored: NoBugAtPosException)
+            {
+            }
+        }
+    }
+
+    fun getBugPositions() = allPositions.filter { getTile(it) is Tile.BugTile }
+
+    fun getBugs() = getBugPositions().map { getBug(it) }
+
+    fun processBug(bugPos: Pos)
+    {
+        val bug = getBug(bugPos)
+
+        val surroundings = getSurroundings(bugPos, bug.orientation)
+
+        val move = bug.brain.calculateMove(bug, surroundings)
+
+        if (move != null)
+            tryMoveBugAndEat(bugPos, move)
     }
 
     companion object

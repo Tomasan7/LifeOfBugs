@@ -1,0 +1,1 @@
+class NoBugAtPosException(pos: Pos) : Exception("There is no bug at $pos!")
