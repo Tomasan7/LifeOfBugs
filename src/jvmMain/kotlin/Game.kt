@@ -1,0 +1,175 @@
+import Tile.Space.tile
+
+class Game(val gameConfig: GameConfig)
+{
+    private val map: Array<Array<Tile>> = Array(gameConfig.width) { Array(gameConfig.height) { Tile.Space } }
+    private val allPositions = run {
+        val positions = mutableListOf<Pos>()
+
+        for (x in 0 until gameConfig.width)
+            for (y in 0 until gameConfig.height)
+                positions.add(Pos(x, y))
+
+        positions.toList()
+    }
+
+    fun getMapCopy() = map.map { it.map { tile -> if (tile is Tile.BugTile) tile.bug.copy().tile() else tile } }
+
+    private fun setTile(pos: Pos, tile: Tile)
+    {
+        map[pos.x][pos.y] = tile
+    }
+
+    fun clearBugs()
+    {
+        for (pos in allPositions)
+        {
+            val tile = getTile(pos)
+
+            if (tile is Tile.BugTile)
+                setTile(pos, Tile.Space)
+        }
+    }
+
+    fun setRandomBugs(amount: Int)
+    {
+        clearBugs()
+        fillRandomBugs(amount)
+    }
+
+    fun fillRandomBugs(amount: Int)
+    {
+        val availablePositions = mutableSetOf(
+            *map.indices.flatMap { x -> map[x].indices.filter { map[x][it] is Tile.Space }.map { y -> Pos(x, y) } }.toTypedArray()
+        )
+
+        repeat(amount) {
+            val availablePos = availablePositions.random()
+            availablePositions.remove(availablePos)
+
+            setTile(
+                pos = availablePos,
+                tile = Bug(
+                    id = it,
+                    name = randomName(),
+                    score = 0,
+                    orientation = Direction.random(),
+                    brain = BRAINS.random(),
+                    color = randomColor()
+                ).tile())
+        }
+    }
+
+    fun getTile(pos: Pos) = try
+    {
+        this.map[pos.x][pos.y]
+    }
+    catch (e: IndexOutOfBoundsException)
+    {
+        Tile.Void
+    }
+
+    fun getRelative(pos: Pos, direction: Direction) = getTile(pos.getRelative(direction))
+
+    fun getSurroundings(pos: Pos, direction: Direction) = Surroundings(
+        getTile(pos.getRelative(direction)),
+        getTile(pos.getRelative(direction.left())),
+        getTile(pos.getRelative(direction.right())),
+        getTile(pos.getRelative(direction.opposite()))
+    )
+
+    fun isMovePossible(pos: Pos, direction: Direction, canEat: Boolean): Boolean
+    {
+        val destination = getRelative(pos, direction)
+
+        if (destination is Tile.Space)
+            return true
+
+        if (destination is Tile.BugTile && canEat)
+            return true
+
+        return false
+    }
+
+    fun isMovePossibleWhileEating(pos: Pos, direction: Direction) = isMovePossible(pos, direction, true)
+
+    fun getBugTile(bugPos: Pos) = getTile(bugPos) as? Tile.BugTile ?: throw NoBugAtPosException(bugPos)
+
+    fun getBug(bugPos: Pos) = getBugTile(bugPos).bug
+
+    fun tryMoveBugAndEat(bugPos: Pos, move: Move) = tryMoveBug(bugPos, move, true)
+
+    fun tryMoveBug(bugPos: Pos, move: Move, shouldEat: Boolean)
+    {
+        val bug = getBug(bugPos)
+
+        when(move)
+        {
+            Move.ROTATE_LEFT  -> bug.rotateLeft()
+            Move.ROTATE_RIGHT -> bug.rotateRight()
+            Move.FORWARD      -> tryMoveBugForward(bugPos, shouldEat)
+        }
+    }
+
+    fun tryMoveBugForward(bugPos: Pos, shouldEat: Boolean)
+    {
+        val bug = getBug(bugPos)
+        val direction = bug.orientation
+
+        val destinationPos = bugPos.getRelative(direction)
+        val destinationTile = getTile(destinationPos)
+        val bugAtDestination = (destinationTile as? Tile.BugTile)?.bug
+
+        if (destinationTile is Tile.Space || destinationTile is Tile.BugTile)
+        {
+            this.map[bugPos.x][bugPos.y] = Tile.Space
+            this.map[destinationPos.x][destinationPos.y] = Tile.BugTile(bug)
+        }
+
+        if (shouldEat && bugAtDestination != null)
+            bug.grow()
+    }
+
+    fun cycle()
+    {
+        val processedBugs = mutableSetOf<Bug>()
+        val positionsToProcess = getBugPositions()
+
+        for (bugPos in positionsToProcess)
+        {
+            try
+            {
+                val bug = getBug(bugPos)
+                processBug(bugPos)
+                processedBugs.add(bug)
+            }
+            catch (ignored: NoBugAtPosException)
+            {
+            }
+        }
+    }
+
+    fun getBugPositions() = allPositions.filter { getTile(it) is Tile.BugTile }
+
+    fun getBugs() = getBugPositions().map { getBug(it) }
+
+    fun processBug(bugPos: Pos)
+    {
+        val bug = getBug(bugPos)
+
+        val surroundings = getSurroundings(bugPos, bug.orientation)
+
+        val move = bug.brain.calculateMove(bug, surroundings)
+
+        if (move != null)
+            tryMoveBugAndEat(bugPos, move)
+    }
+
+    companion object
+    {
+        val BRAINS = setOf(
+            SimpleBrain(),
+            AggressiveBrain(),
+        )
+    }
+}

@@ -1,150 +1,71 @@
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import kotlin.random.Random
+import kotlinx.coroutines.*
 
-class ViewModel(val gameConfig: GameConfig)
+class ViewModel(gameConfig: GameConfig)
 {
-    var bugs by mutableStateOf(emptyList<Bug?>())
+    private val game: Game = Game(gameConfig)
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Default)
+    private var cycleJob: Job? = null
 
     init
     {
-        setRandomBugs(100)
+        game.fillRandomBugs(100)
     }
 
-    fun setRandomBugs(amount: Int)
+    var map by mutableStateOf(game.getMapCopy())
+        private set
+    var speed by mutableStateOf(100L)
+        private set
+
+    fun setTickSpeed(speed: Long)
     {
-        val newBugs = arrayOfNulls<Bug?>(gameConfig.size)
-
-        val availableSpots = (0 until gameConfig.size).toMutableList()
-
-        repeat(amount) {
-            val availableSpotsIndex = Random.nextInt(availableSpots.size)
-            val availableSpot = availableSpots[availableSpotsIndex]
-            availableSpots.removeAt(availableSpotsIndex)
-
-            newBugs[availableSpot] = Bug(
-                id = it,
-                name = randomName(),
-                score = 0,
-                orientation = Direction.random(),
-                brain = BRAINS.random(),
-                color = Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
-            )
-        }
-
-        bugs = newBugs.toList()
+        this.speed = speed
     }
 
-    fun updateBug(bug: Bug, newBug: Bug)
+    fun reset()
     {
-        val bugIndex = bugs.indexOf(bug)
-        bugs = bugs.toMutableList().apply { this[bugIndex] = newBug }
+        cycleJob?.cancel()
+        game.setRandomBugs(100)
+        update()
     }
 
-    fun moveBugAndEat(bug: Bug, move: Move)
-    {
-        val bugIndex = bugs.indexOf(bug)
-        val newIndex: Int
-        val newBug: Bug
-
-        if (move == Move.FORWARD)
-        {
-            /* desiredNewIndex is null, when it's out of border. */
-            val desiredNewIndex = getRelative(bugIndex, bug.orientation) ?: return
-
-            val bugOnIndex = bugs[desiredNewIndex]
-
-            newIndex = desiredNewIndex
-            newBug = if (bugOnIndex == null) bug else bug.grow()
-        }
-        else
-        {
-            newIndex = bugIndex
-            newBug = when (move)
-            {
-                Move.ROTATE_LEFT -> bug.rotateLeft()
-                Move.ROTATE_RIGHT -> bug.rotateRight()
-                else -> bug
-            }
-        }
-
-        if (newIndex != bugIndex)
-        {
-            bugs = bugs.toMutableList().apply {
-                this[bugIndex] = null
-                this[newIndex] = newBug
-            }
-        }
-        else
-            bugs = bugs.toMutableList().apply { this[bugIndex] = newBug }
-    }
-
-    /**
-     * @return the index relative to the [index] in [direction]. Or null, if it's out of border.
-     */
-    private fun getRelative(index: Int, direction: Direction): Int?
-    {
-        val destination = when (direction)
-        {
-            Direction.UP    -> index - gameConfig.width
-            Direction.DOWN  -> index + gameConfig.width
-            Direction.LEFT  -> index - 1
-            Direction.RIGHT -> index + 1
-        }
-
-        val rowsBefore = index / gameConfig.width
-        val rowLocalDestination = destination - rowsBefore * gameConfig.width
-
-        val moveInBounds = when (direction)
-        {
-            Direction.UP, Direction.DOWN    -> destination in bugs.indices
-            Direction.RIGHT, Direction.LEFT -> rowLocalDestination in 0 until gameConfig.width
-        }
-
-        if (moveInBounds)
-            return destination
-        else
-            return null
-    }
-
-    private fun getSurroundings(bug: Bug): Surroundings
-    {
-        val bugIndex = bugs.indexOf(bug)
-
-        return Surroundings(
-            front = getRelative(bugIndex, bug.orientation)?.let { bugs[it] },
-            right = getRelative(bugIndex, bug.orientation.right())?.let { bugs[it] },
-            left = getRelative(bugIndex, bug.orientation.left())?.let { bugs[it] },
-            back = getRelative(bugIndex, bug.orientation.opposite())?.let { bugs[it] }
-        )
-    }
+    fun getBugs() = map.flatten().filterIsInstance<Tile.BugTile>().map { it.bug }
 
     fun cycle()
     {
-        val bugsIdsToProcessIterator = bugs.filterNotNull().map { it.id }.toMutableSet().iterator()
+        if (cycleJob != null && cycleJob!!.isActive)
+            return
 
-        for (bugId in bugsIdsToProcessIterator)
-        {
-            val bug = bugs.find { it?.id == bugId } ?: continue
+        cycleJob = coroutineScope.launch {
+            val processedBugs = mutableSetOf<Bug>()
+            val positionsToProcess = game.getBugPositions()
 
-            val surroundings = getSurroundings(bug)
+            for (bugPos in positionsToProcess)
+            {
+                try
+                {
+                    val bug = game.getBug(bugPos)
 
-            val move = bug.brain.calculateMove(bug, surroundings)
+                    if (bug in processedBugs)
+                        continue
 
-            if (move != null)
-                moveBugAndEat(bug, move)
-
-            bugsIdsToProcessIterator.remove()
+                    game.processBug(bugPos)
+                    processedBugs.add(bug)
+                    update()
+                    delay(speed)
+                }
+                catch (ignored: NoBugAtPosException)
+                {
+                }
+            }
         }
     }
 
-    companion object
+    fun update()
     {
-        val BRAINS = setOf(
-            SimpleBrain(),
-            AggressiveBrain(),
-        )
+        map = game.getMapCopy()
     }
 }
