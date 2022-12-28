@@ -30,6 +30,7 @@ import androidx.compose.ui.window.*
 import me.tomasan7.lifeofbugs.game.bug.Bug
 import me.tomasan7.lifeofbugs.game.GameConfig
 import me.tomasan7.lifeofbugs.game.Tile
+import me.tomasan7.lifeofbugs.serialization.BasicMapSerializer
 import me.tomasan7.lifeofbugs.util.ceil
 import me.tomasan7.lifeofbugs.util.floor
 
@@ -38,10 +39,10 @@ import me.tomasan7.lifeofbugs.util.floor
 fun Game(applicationScope: ApplicationScope)
 {
     val gameConfig = remember { GameConfig(10, 10) }
-    val viewModel = remember { ViewModel(gameConfig) }
+    val viewModel = remember { ViewModel(gameConfig, BasicMapSerializer) }
 
     Window(
-        onCloseRequest = applicationScope::exitApplication,
+        onCloseRequest = { viewModel.end(); applicationScope.exitApplication() },
         title = "Life of Bugs",
         icon = painterResource("bug.png"),
         state = WindowState(size = DpSize(550.dp, 900.dp)),

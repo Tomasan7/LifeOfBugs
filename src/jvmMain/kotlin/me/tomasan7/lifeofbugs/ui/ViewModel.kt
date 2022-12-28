@@ -9,8 +9,10 @@ import me.tomasan7.lifeofbugs.game.Game
 import me.tomasan7.lifeofbugs.game.GameConfig
 import me.tomasan7.lifeofbugs.game.NoBugAtPosException
 import me.tomasan7.lifeofbugs.game.Tile
+import me.tomasan7.lifeofbugs.serialization.MapSerializer
+import java.io.File
 
-class ViewModel(gameConfig: GameConfig)
+class ViewModel(gameConfig: GameConfig, private val serializer: MapSerializer)
 {
     private val game: Game = Game(gameConfig)
 
@@ -71,8 +73,19 @@ class ViewModel(gameConfig: GameConfig)
         }
     }
 
+    fun end()
+    {
+        cycleJob?.cancel()
+        mapFile.writeText(serializer.serialize(game.getMapCopy()))
+    }
+
     fun update()
     {
         map = game.getMapCopy()
+    }
+
+    companion object
+    {
+        private val mapFile = File("map.txt")
     }
 }
