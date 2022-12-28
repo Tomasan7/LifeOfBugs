@@ -18,4 +18,4 @@ fun Float.ceil() = ceil(this).toInt()
 
 fun Float.floor() = this.toInt()
 
-private val namesFile = File(GameConfig::class.java.getResource("names.txt").path)
+private val namesFile = File(object {}.javaClass.enclosingClass.getResource("/names.txt").path)
