@@ -9,12 +9,12 @@ import me.tomasan7.lifeofbugs.util.randomName
 
 class Game(val gameConfig: GameConfig)
 {
-    private val map: Array<Array<Tile>> = Array(gameConfig.width) { Array(gameConfig.height) { Tile.Space } }
+    private val map: Array<Array<Tile>> = Array(gameConfig.height) { Array(gameConfig.width) { Tile.Space } }
     private val allPositions = run {
         val positions = mutableListOf<Pos>()
 
-        for (x in 0 until gameConfig.width)
-            for (y in 0 until gameConfig.height)
+        for (y in 0 until gameConfig.height)
+            for (x in 0 until gameConfig.width)
                 positions.add(Pos(x, y))
 
         positions.toList()
@@ -24,7 +24,7 @@ class Game(val gameConfig: GameConfig)
 
     private fun setTile(pos: Pos, tile: Tile)
     {
-        map[pos.x][pos.y] = tile
+        map[pos.y][pos.x] = tile
     }
 
     fun clearBugs()
@@ -46,9 +46,7 @@ class Game(val gameConfig: GameConfig)
 
     fun fillRandomBugs(amount: Int)
     {
-        val availablePositions = mutableSetOf(
-            *map.indices.flatMap { x -> map[x].indices.filter { map[x][it] is Tile.Space }.map { y -> Pos(x, y) } }.toTypedArray()
-        )
+        val availablePositions = allPositions.filter { getTile(it) is Tile.Space }.toMutableList()
 
         repeat(amount) {
             val availablePos = availablePositions.random()
@@ -69,7 +67,7 @@ class Game(val gameConfig: GameConfig)
 
     fun getTile(pos: Pos) = try
     {
-        this.map[pos.x][pos.y]
+        this.map[pos.y][pos.x]
     }
     catch (e: IndexOutOfBoundsException)
     {
@@ -129,8 +127,8 @@ class Game(val gameConfig: GameConfig)
 
         if (destinationTile is Tile.Space || destinationTile is Tile.BugTile)
         {
-            this.map[bugPos.x][bugPos.y] = Tile.Space
-            this.map[destinationPos.x][destinationPos.y] = Tile.BugTile(bug)
+            this.map[bugPos.y][bugPos.x] = Tile.Space
+            this.map[destinationPos.y][destinationPos.x] = Tile.BugTile(bug)
         }
 
         if (shouldEat && bugAtDestination != null)

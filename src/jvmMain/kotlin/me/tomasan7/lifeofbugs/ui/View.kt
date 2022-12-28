@@ -51,12 +51,10 @@ fun Game(applicationScope: ApplicationScope)
             true
         }) {
         Column {
-            LazyRow {
-                items(viewModel.map) { clmn ->
-                    LazyColumn {
-                        items(clmn.size) { i ->
-                            /* To reverse the order of the elements. */
-                            val tile = clmn[clmn.size - i - 1]
+            LazyColumn {
+                items(viewModel.map) { row ->
+                    LazyRow {
+                        items(row) { tile ->
                             Tile(tile)
                         }
                     }

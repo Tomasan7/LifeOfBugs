@@ -4,8 +4,8 @@ data class Pos(val x: Int, val y: Int)
 {
     fun left() = Pos(x - 1, y)
     fun right() = Pos(x + 1, y)
-    fun up() = Pos(x, y + 1)
-    fun down() = Pos(x, y - 1)
+    fun up() = Pos(x, y - 1)
+    fun down() = Pos(x, y + 1)
 
     fun getRelative(direction: Direction) = when (direction)
     {
