@@ -23,5 +23,5 @@ class AggressiveBrain: Brain
         return Move.FORWARD
     }
 
-    override fun getBrainName() = "me.tomasan7.lifeofbugs.bug.AggressiveBrain"
+    override fun getBrainName() = "Aggressive"
 }

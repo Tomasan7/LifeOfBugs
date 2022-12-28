@@ -20,5 +20,5 @@ class SimpleBrain : Brain
         return Move.ROTATE_LEFT
     }
 
-    override fun getBrainName() = "me.tomasan7.lifeofbugs.bug.SimpleBrain"
+    override fun getBrainName() = "Simple"
 }
