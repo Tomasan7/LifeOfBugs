@@ -13,7 +13,7 @@ import me.tomasan7.lifeofbugs.util.randomName
  */
 object BasicMapSerializer : MapSerializer
 {
-    override fun serialize(map: Array<Array<Tile>>): String
+    override fun serialize(map: List<List<Tile>>): String
     {
         val builder = StringBuilder()
 
@@ -45,20 +45,22 @@ object BasicMapSerializer : MapSerializer
         return builder.toString()
     }
 
-    override fun deserialize(string: String): Array<Array<Tile>>
+    override fun deserialize(string: String): List<List<Tile>>
     {
         val lines = string.lines()
         val height = lines.size
         val width = lines.maxOf { it.length }
-        val map: Array<Array<Tile>> = Array(height) { Array(width) { Tile.Space } }
+        val map: MutableList<List<Tile>> = ArrayList(height)
 
-        for (y in 0 until height)
+        var id = 0
+
+        for (line in lines)
         {
-            for (x in 0 until width)
-            {
-                val id = y * width + x
+            val row = ArrayList<Tile>(width)
 
-                map[y][x] = when (lines[y][x])
+            for (char in line)
+            {
+                row.add(when (char)
                 {
                     'X' -> Tile.Wall
                     '^' -> Tile.BugTile(createBug(id, Direction.UP))
@@ -66,8 +68,12 @@ object BasicMapSerializer : MapSerializer
                     '<' -> Tile.BugTile(createBug(id, Direction.LEFT))
                     '>' -> Tile.BugTile(createBug(id, Direction.RIGHT))
                     else -> Tile.Space
-                }
+                })
+
+                id++
             }
+
+            map.add(row)
         }
 
         return map
