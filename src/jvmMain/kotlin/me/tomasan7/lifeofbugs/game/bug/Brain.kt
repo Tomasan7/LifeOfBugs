@@ -1,3 +1,8 @@
+package me.tomasan7.lifeofbugs.game.bug
+
+import me.tomasan7.lifeofbugs.game.Move
+import me.tomasan7.lifeofbugs.game.Surroundings
+
 interface Brain
 {
     /**

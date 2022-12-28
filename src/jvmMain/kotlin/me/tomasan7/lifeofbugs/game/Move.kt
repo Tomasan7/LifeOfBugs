@@ -1,3 +1,5 @@
+package me.tomasan7.lifeofbugs.game
+
 enum class Move(private val isMovement: Boolean, private val isRotation: Boolean)
 {
     FORWARD(true, false),

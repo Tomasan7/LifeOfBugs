@@ -1,4 +1,7 @@
+package me.tomasan7.lifeofbugs.util
+
 import androidx.compose.ui.graphics.Color
+import me.tomasan7.lifeofbugs.game.GameConfig
 import java.io.File
 import kotlin.math.ceil
 import kotlin.random.Random

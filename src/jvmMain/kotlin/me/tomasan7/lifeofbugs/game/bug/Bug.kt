@@ -1,4 +1,7 @@
+package me.tomasan7.lifeofbugs.game.bug
+
 import androidx.compose.ui.graphics.Color
+import me.tomasan7.lifeofbugs.game.Direction
 
 data class Bug(
     val id: Int,

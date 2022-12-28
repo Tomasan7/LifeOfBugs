@@ -1,3 +1,5 @@
+package me.tomasan7.lifeofbugs.game
+
 enum class Direction(val degrees: Int)
 {
     UP(0),

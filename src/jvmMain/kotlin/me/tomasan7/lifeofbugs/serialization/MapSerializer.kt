@@ -1,6 +1,6 @@
-package serialization
+package me.tomasan7.lifeofbugs.serialization
 
-import Tile
+import me.tomasan7.lifeofbugs.game.Tile
 
 interface MapSerializer
 {

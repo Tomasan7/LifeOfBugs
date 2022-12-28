@@ -1,7 +1,14 @@
+package me.tomasan7.lifeofbugs.ui
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.*
+import me.tomasan7.lifeofbugs.game.bug.Bug
+import me.tomasan7.lifeofbugs.game.Game
+import me.tomasan7.lifeofbugs.game.GameConfig
+import me.tomasan7.lifeofbugs.game.NoBugAtPosException
+import me.tomasan7.lifeofbugs.game.Tile
 
 class ViewModel(gameConfig: GameConfig)
 {

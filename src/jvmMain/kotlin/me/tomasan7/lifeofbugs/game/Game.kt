@@ -1,4 +1,11 @@
-import Tile.Space.tile
+package me.tomasan7.lifeofbugs.game
+
+import me.tomasan7.lifeofbugs.game.bug.AggressiveBrain
+import me.tomasan7.lifeofbugs.game.bug.Bug
+import me.tomasan7.lifeofbugs.game.bug.SimpleBrain
+import me.tomasan7.lifeofbugs.game.Tile.Space.tile
+import me.tomasan7.lifeofbugs.util.randomColor
+import me.tomasan7.lifeofbugs.util.randomName
 
 class Game(val gameConfig: GameConfig)
 {

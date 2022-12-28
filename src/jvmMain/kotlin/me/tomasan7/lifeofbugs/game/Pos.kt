@@ -1,3 +1,5 @@
+package me.tomasan7.lifeofbugs.game
+
 data class Pos(val x: Int, val y: Int)
 {
     fun left() = Pos(x - 1, y)

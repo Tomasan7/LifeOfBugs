@@ -1,3 +1,9 @@
+package me.tomasan7.lifeofbugs.game.bug
+
+import me.tomasan7.lifeofbugs.game.Move
+import me.tomasan7.lifeofbugs.game.Surroundings
+import me.tomasan7.lifeofbugs.game.Tile
+
 class SimpleBrain : Brain
 {
     override fun calculateMove(bug: Bug, surroundings: Surroundings): Move?
@@ -14,5 +20,5 @@ class SimpleBrain : Brain
         return Move.ROTATE_LEFT
     }
 
-    override fun getBrainName() = "SimpleBrain"
+    override fun getBrainName() = "me.tomasan7.lifeofbugs.bug.SimpleBrain"
 }

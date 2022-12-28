@@ -1,3 +1,9 @@
+package me.tomasan7.lifeofbugs.game.bug
+
+import me.tomasan7.lifeofbugs.game.Move
+import me.tomasan7.lifeofbugs.game.Surroundings
+import me.tomasan7.lifeofbugs.game.Tile
+
 class AggressiveBrain: Brain
 {
     override fun calculateMove(bug: Bug, surroundings: Surroundings): Move
@@ -17,5 +23,5 @@ class AggressiveBrain: Brain
         return Move.FORWARD
     }
 
-    override fun getBrainName() = "AggressiveBrain"
+    override fun getBrainName() = "me.tomasan7.lifeofbugs.bug.AggressiveBrain"
 }

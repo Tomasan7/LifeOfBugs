@@ -1,3 +1,5 @@
+package me.tomasan7.lifeofbugs.ui
+
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -19,14 +21,17 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
+import me.tomasan7.lifeofbugs.game.bug.Bug
+import me.tomasan7.lifeofbugs.game.GameConfig
+import me.tomasan7.lifeofbugs.game.Tile
+import me.tomasan7.lifeofbugs.util.ceil
+import me.tomasan7.lifeofbugs.util.floor
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -37,7 +42,7 @@ fun Game(applicationScope: ApplicationScope)
 
     Window(
         onCloseRequest = applicationScope::exitApplication,
-        title = "Bug Game",
+        title = "me.tomasan7.lifeofbugs.bug.Bug me.tomasan7.lifeofbugs.game.Game",
         icon = painterResource("bug.png"),
         state = WindowState(size = DpSize(550.dp, 900.dp)),
         onKeyEvent = { keyEvent ->
@@ -146,7 +151,7 @@ fun Bug(bug: Bug, onClick: () -> Unit = {}, onLongClick: () -> Unit = {}, modifi
 
                 Image(
                     painter = painterResource("bug.png"),
-                    contentDescription = "Bug",
+                    contentDescription = "me.tomasan7.lifeofbugs.bug.Bug",
                     colorFilter = ColorFilter.tint(color = bug.color),
                     modifier = modifier.rotate(animatedRotation)
                 )
@@ -162,9 +167,9 @@ fun Tile(tile: Tile, onClick: () -> Unit = {})
 {
     when (tile)
     {
-        is Tile.BugTile -> Bug(tile.bug, modifier = Modifier.size(50.dp), onClick = onClick)
+        is Tile.BugTile         -> Bug(tile.bug, modifier = Modifier.size(50.dp), onClick = onClick)
         is Tile.Wall, Tile.Void -> Box(modifier = Modifier.size(50.dp).background(Color.Black))
-        is Tile.Space -> Box(modifier = Modifier.size(50.dp))
+        is Tile.Space           -> Box(modifier = Modifier.size(50.dp))
     }
 }
 
