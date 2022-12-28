@@ -42,7 +42,7 @@ fun Game(applicationScope: ApplicationScope)
 
     Window(
         onCloseRequest = applicationScope::exitApplication,
-        title = "me.tomasan7.lifeofbugs.bug.Bug me.tomasan7.lifeofbugs.game.Game",
+        title = "Life of Bugs",
         icon = painterResource("bug.png"),
         state = WindowState(size = DpSize(550.dp, 900.dp)),
         onKeyEvent = { keyEvent ->
