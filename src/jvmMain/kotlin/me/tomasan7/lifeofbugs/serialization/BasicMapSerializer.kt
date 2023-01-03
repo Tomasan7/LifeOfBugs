@@ -42,7 +42,7 @@ object BasicMapSerializer : MapSerializer
             builder.append('\n')
         }
 
-        return builder.toString()
+        return builder.toString().trimEnd()
     }
 
     override fun deserialize(string: String): List<List<Tile>>
