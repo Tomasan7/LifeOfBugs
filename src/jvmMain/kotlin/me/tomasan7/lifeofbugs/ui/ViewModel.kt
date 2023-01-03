@@ -20,7 +20,6 @@ class ViewModel
         this.game.fillRandomBugs()
         this.serializer = serializer
         this.map = game.getMapCopy()
-
     }
 
     constructor(serializer: MapSerializer)
