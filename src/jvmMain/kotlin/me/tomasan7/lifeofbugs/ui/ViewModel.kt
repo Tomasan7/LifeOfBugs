@@ -42,19 +42,24 @@ class ViewModel
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var cycleJob: Job? = null
+    private var playingJob: Job? = null
 
     var map by mutableStateOf(emptyList<List<Tile>>())
         private set
-    var speed by mutableStateOf(100L)
+    var cycleDelay by mutableStateOf(100L)
+        private set
+    var playing by mutableStateOf(false)
         private set
 
     fun setTickSpeed(speed: Long)
     {
-        this.speed = speed
+        this.cycleDelay = speed
     }
 
     fun reset()
     {
+        playing = false
+        playingJob?.cancel()
         cycleJob?.cancel()
         game.setRandomBugs(100)
         update()
@@ -62,7 +67,7 @@ class ViewModel
 
     fun getBugs() = map.flatten().filterIsInstance<Tile.BugTile>().map { it.bug }
 
-    fun cycle()
+    fun cycle(onFinish: () -> Unit = {})
     {
         if (cycleJob != null && cycleJob!!.isActive)
             return
@@ -83,7 +88,7 @@ class ViewModel
                     game.processBug(bugPos)
                     processedBugs.add(bug)
                     update()
-                    delay(speed)
+                    delay(cycleDelay)
                 }
                 catch (ignored: NoBugAtPosException)
                 {
@@ -93,12 +98,55 @@ class ViewModel
             val respawnHappened = game.respawnIfNecessary()
             if (respawnHappened)
                 update()
+
+            onFinish()
         }
+    }
+
+    fun play()
+    {
+        if (playing)
+            return
+
+        playing = true
+        playingJob = coroutineScope.launch {
+            var finished = true
+
+            while (isActive)
+            {
+                if (finished)
+                {
+                    cycle {
+                        finished = true
+                    }
+                    finished = false
+                }
+                if (cycleDelay > 0)
+                    delay(cycleDelay)
+                else
+                    delay(100)
+            }
+        }
+    }
+
+    fun stopPlaying()
+    {
+        playing = false
+        playingJob?.cancel()
+    }
+
+    fun playStop()
+    {
+        if (playing)
+            stopPlaying()
+        else
+            play()
     }
 
     fun end()
     {
         cycleJob?.cancel()
+        playingJob?.cancel()
         mapFile.writeText(serializer.serialize(game.getMapCopy()))
     }
 

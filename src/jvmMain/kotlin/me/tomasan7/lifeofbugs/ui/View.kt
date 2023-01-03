@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.*
 import me.tomasan7.lifeofbugs.game.bug.Bug
-import me.tomasan7.lifeofbugs.game.GameConfig
 import me.tomasan7.lifeofbugs.game.Tile
 import me.tomasan7.lifeofbugs.serialization.BasicMapSerializer
 import me.tomasan7.lifeofbugs.util.ceil
@@ -73,19 +72,26 @@ fun Game(applicationScope: ApplicationScope)
                 Text("Restart")
             }
 
+            Button(onClick = { viewModel.playStop() }) {
+                if (viewModel.playing)
+                    Text("Stop")
+                else
+                    Text("Play")
+            }
+
             Slider(
                 modifier = Modifier.fillMaxWidth(),
                 colors = SliderDefaults.colors(
                     activeTrackColor = Color.Blue,
                     inactiveTrackColor = Color.Blue
                 ),
-                value = viewModel.speed.toFloat(),
+                value = viewModel.cycleDelay.toFloat(),
                 onValueChange = { viewModel.setTickSpeed(it.toLong()) },
                 valueRange = 0f..1000f,
                 steps = 100
             )
 
-            Text("Speed: ${viewModel.speed}ms")
+            Text("Cycle delay: ${viewModel.cycleDelay}ms")
         }
     }
 }
@@ -165,9 +171,9 @@ fun Tile(tile: Tile, onClick: () -> Unit = {})
 {
     when (tile)
     {
-        is Tile.BugTile         -> Bug(tile.bug, modifier = Modifier.size(50.dp), onClick = onClick)
-        is Tile.Wall, Tile.Void -> Box(modifier = Modifier.size(50.dp).background(Color.Black))
-        is Tile.Space           -> Box(modifier = Modifier.size(50.dp))
+        is Tile.BugTile         -> Bug(tile.bug, modifier = Modifier.size(40.dp), onClick = onClick)
+        is Tile.Wall, Tile.Void -> Box(modifier = Modifier.size(40.dp).background(Color.Black))
+        is Tile.Space           -> Box(modifier = Modifier.size(40.dp))
     }
 }
 
