@@ -43,6 +43,9 @@ class Game
     private val map: Array<Array<Tile>>
     private val allPositions: List<Pos>
 
+    private val availablePositions: List<Pos>
+        get() = allPositions.filter { getTile(it) is Tile.Space }
+
     fun getMapCopy() = map.map { it.map { tile -> if (tile is Tile.BugTile) tile.bug.copy().tile() else tile } }
 
     private fun setTile(pos: Pos, tile: Tile)
@@ -69,7 +72,7 @@ class Game
 
     fun fillRandomBugs(amount: Int)
     {
-        val availablePositions = allPositions.filter { getTile(it) is Tile.Space }.toMutableList()
+        val availablePositions = this.availablePositions.toMutableList()
 
         repeat(amount) {
             val availablePos = availablePositions.random()
@@ -78,7 +81,7 @@ class Game
             setTile(
                 pos = availablePos,
                 tile = Bug(
-                    id = it,
+                    id = newUniqueId(),
                     name = randomName(),
                     score = 0,
                     orientation = Direction.random(),
@@ -88,19 +91,51 @@ class Game
         }
     }
 
+    private fun newUniqueId(): Int
+    {
+        var id = 0
+
+        while (true)
+        {
+            if (getBugs().none { it.id == id })
+                return id
+
+            id++
+        }
+    }
+
     fun fillRandomBugs()
     {
-        val availablePositions = allPositions.filter { getTile(it) is Tile.Space }.toMutableList()
+        val availablePositions = this.availablePositions.toMutableList()
+
+        availablePositions.forEach { availablePos ->
+            setTile(
+                pos = availablePos,
+                tile = Bug(
+                    id = newUniqueId(),
+                    name = randomName(),
+                    score = 0,
+                    orientation = Direction.random(),
+                    brain = BRAINS.random(),
+                    color = randomColor()
+                ).tile())
+        }
+    }
+
+    fun fillWithBrainsOfMostSuccessfulBugs()
+    {
+        val topBrains = getBugs().sortedByDescending { it.score }.take(BRAINS.size).map { it.brain }
+        val availablePositions = this.availablePositions.toMutableList()
 
         availablePositions.forEachIndexed { i, availablePos ->
             setTile(
                 pos = availablePos,
                 tile = Bug(
-                    id = i,
+                    id = newUniqueId(),
                     name = randomName(),
                     score = 0,
                     orientation = Direction.random(),
-                    brain = BRAINS.random(),
+                    brain = topBrains[i % topBrains.size],
                     color = randomColor()
                 ).tile())
         }
@@ -193,6 +228,22 @@ class Game
             {
             }
         }
+    }
+
+    /**
+     * @return Whether the respawn happened or not.
+     */
+    fun respawnIfNecessary(): Boolean
+    {
+        val nonWallPosCount = allPositions.count { getTile(it) !is Tile.Wall }
+
+        if (getBugs().size <= nonWallPosCount / 10)
+        {
+            fillWithBrainsOfMostSuccessfulBugs()
+            return true
+        }
+
+        return false
     }
 
     fun getBugPositions() = allPositions.filter { getTile(it) is Tile.BugTile }

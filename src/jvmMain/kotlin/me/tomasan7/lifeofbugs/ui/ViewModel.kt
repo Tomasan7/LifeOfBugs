@@ -89,6 +89,10 @@ class ViewModel
                 {
                 }
             }
+
+            val respawnHappened = game.respawnIfNecessary()
+            if (respawnHappened)
+                update()
         }
     }
 
