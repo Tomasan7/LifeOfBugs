@@ -38,8 +38,7 @@ import me.tomasan7.lifeofbugs.util.floor
 @Composable
 fun Game(applicationScope: ApplicationScope)
 {
-    val gameConfig = remember { GameConfig(10, 10) }
-    val viewModel = remember { ViewModel(gameConfig, BasicMapSerializer) }
+    val viewModel = remember { ViewModel(BasicMapSerializer) }
 
     Window(
         onCloseRequest = { viewModel.end(); applicationScope.exitApplication() },

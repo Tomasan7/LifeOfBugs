@@ -7,18 +7,41 @@ import me.tomasan7.lifeofbugs.game.Tile.Space.tile
 import me.tomasan7.lifeofbugs.util.randomColor
 import me.tomasan7.lifeofbugs.util.randomName
 
-class Game(val gameConfig: GameConfig)
+class Game
 {
-    private val map: Array<Array<Tile>> = Array(gameConfig.height) { Array(gameConfig.width) { Tile.Space } }
-    private val allPositions = run {
-        val positions = mutableListOf<Pos>()
+    constructor(gameConfig: GameConfig)
+    {
+        this.gameConfig = gameConfig
+        this.map = Array(gameConfig.height) { Array(gameConfig.width) { Tile.Space } }
+        this.allPositions = run {
+            val positions = mutableListOf<Pos>()
 
-        for (y in 0 until gameConfig.height)
-            for (x in 0 until gameConfig.width)
-                positions.add(Pos(x, y))
+            for (y in 0 until gameConfig.height)
+                for (x in 0 until gameConfig.width)
+                    positions.add(Pos(x, y))
 
-        positions.toList()
+            positions.toList()
+        }
     }
+
+    constructor(map: List<List<Tile>>)
+    {
+        this.gameConfig = GameConfig(map[0].size, map.size)
+        this.map = map.map { it.toTypedArray() }.toTypedArray()
+        this.allPositions = run {
+            val positions = mutableListOf<Pos>()
+
+            for (y in 0 until gameConfig.height)
+                for (x in 0 until gameConfig.width)
+                    positions.add(Pos(x, y))
+
+            positions.toList()
+        }
+    }
+
+    private val gameConfig: GameConfig
+    private val map: Array<Array<Tile>>
+    private val allPositions: List<Pos>
 
     fun getMapCopy() = map.map { it.map { tile -> if (tile is Tile.BugTile) tile.bug.copy().tile() else tile } }
 
@@ -56,6 +79,24 @@ class Game(val gameConfig: GameConfig)
                 pos = availablePos,
                 tile = Bug(
                     id = it,
+                    name = randomName(),
+                    score = 0,
+                    orientation = Direction.random(),
+                    brain = BRAINS.random(),
+                    color = randomColor()
+                ).tile())
+        }
+    }
+
+    fun fillRandomBugs()
+    {
+        val availablePositions = allPositions.filter { getTile(it) is Tile.Space }.toMutableList()
+
+        availablePositions.forEachIndexed { i, availablePos ->
+            setTile(
+                pos = availablePos,
+                tile = Bug(
+                    id = i,
                     name = randomName(),
                     score = 0,
                     orientation = Direction.random(),
@@ -108,7 +149,7 @@ class Game(val gameConfig: GameConfig)
     {
         val bug = getBug(bugPos)
 
-        when(move)
+        when (move)
         {
             Move.ROTATE_LEFT  -> bug.rotateLeft()
             Move.ROTATE_RIGHT -> bug.rotateRight()

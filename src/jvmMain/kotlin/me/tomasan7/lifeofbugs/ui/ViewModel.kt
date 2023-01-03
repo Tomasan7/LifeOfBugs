@@ -12,19 +12,39 @@ import me.tomasan7.lifeofbugs.game.Tile
 import me.tomasan7.lifeofbugs.serialization.MapSerializer
 import java.io.File
 
-class ViewModel(gameConfig: GameConfig, private val serializer: MapSerializer)
+class ViewModel
 {
-    private val game: Game = Game(gameConfig)
+    constructor(gameConfig: GameConfig, serializer: MapSerializer)
+    {
+        this.game = Game(gameConfig)
+        this.game.fillRandomBugs()
+        this.serializer = serializer
+        this.map = game.getMapCopy()
+
+    }
+
+    constructor(serializer: MapSerializer)
+    {
+        if (mapFile.exists())
+            this.game = Game(serializer.deserialize(mapFile.readText()))
+        else
+        {
+            val gameConfig = GameConfig(10, 10)
+            this.game = Game(gameConfig)
+            game.fillRandomBugs()
+        }
+
+        this.serializer = serializer
+        this.map = game.getMapCopy()
+    }
+
+    private val game: Game
+    private val serializer: MapSerializer
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var cycleJob: Job? = null
 
-    init
-    {
-        game.fillRandomBugs(100)
-    }
-
-    var map by mutableStateOf(game.getMapCopy())
+    var map by mutableStateOf(emptyList<List<Tile>>())
         private set
     var speed by mutableStateOf(100L)
         private set
