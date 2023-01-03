@@ -229,16 +229,3 @@ fun textColor(backgroundColor: Color): Color
 
     return if (luminance > 0.5) Color.Black else Color.White
 }
-
-class Ref(var value: Int)
-
-// Note the inline function below which ensures that this function is essentially
-// copied at the call site to ensure that its logging only recompositions from the
-// original call site.
-@Composable
-inline fun LogCompositions(msg: String)
-{
-    val ref = remember { Ref(0) }
-    SideEffect { ref.value++ }
-    println("Compositions: $msg ${ref.value}")
-}

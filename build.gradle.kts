@@ -1,10 +1,8 @@
-import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("multiplatform")
-    id("org.jetbrains.compose")
+    kotlin("jvm") version "1.7.20"
+    id("org.jetbrains.compose") version "1.2.2"
 }
 
 group = "me.tomasan7"
@@ -16,28 +14,16 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
 }
 
-kotlin {
-    jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "11"
-        }
-        withJava()
-    }
-    sourceSets {
-        val jvmMain by getting {
-            dependencies {
-                implementation(compose.desktop.currentOs)
-            }
-        }
-        val jvmTest by getting
-    }
+dependencies {
+    implementation(compose.desktop.currentOs)
 }
 
 compose.desktop {
     application {
-        mainClass = "MainKt"
+        mainClass = "me.tomasan7.lifeofbugs.MainKt"
+
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Exe)
             packageName = "LifeOfBugs"
             packageVersion = "1.0.0"
         }
