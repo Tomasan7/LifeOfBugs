@@ -4,6 +4,10 @@ Tento projekt je upravená verze zadání ze školy.
 
 ## Spuštění
 
+Spustitelný jar lze stáhnout v [GitHub releases](https://github.com/Tomasan7/LifeOfBugs/releases).
+
+## Spuštění s kódem
+
 1. Clonněte si tento repozitář do vybrané složky pomocí příkazu `git clone https://github.com/Tomasan7/LifeOfBugs`
 2. Přejděte do složky s projektem `cd LifeOfBugs`
 3. Spusťte program pomocí příkazu `.\gradlew run`
