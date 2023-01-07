@@ -265,8 +265,8 @@ class Game
     companion object
     {
         val BRAINS = setOf(
-            SimpleBrain(),
-            AggressiveBrain(),
+            SimpleBrain,
+            AggressiveBrain,
         )
     }
 }

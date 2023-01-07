@@ -4,7 +4,7 @@ import me.tomasan7.lifeofbugs.game.Move
 import me.tomasan7.lifeofbugs.game.Surroundings
 import me.tomasan7.lifeofbugs.game.Tile
 
-class AggressiveBrain: Brain
+object AggressiveBrain: Brain
 {
     override fun calculateMove(bug: Bug, surroundings: Surroundings): Move
     {
