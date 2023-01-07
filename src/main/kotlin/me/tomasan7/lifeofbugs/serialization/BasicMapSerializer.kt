@@ -25,7 +25,7 @@ object BasicMapSerializer : MapSerializer
                 {
                     is Tile.Void -> {}
                     is Tile.Space -> builder.append('-')
-                    is Tile.Wall -> builder.append('X')
+                    is Tile.Wall -> builder.append('#')
                     is Tile.BugTile ->
                     {
                         when (tile.bug.orientation)
@@ -62,7 +62,7 @@ object BasicMapSerializer : MapSerializer
             {
                 row.add(when (char)
                 {
-                    'X' -> Tile.Wall
+                    '#' -> Tile.Wall
                     '^' -> Tile.BugTile(createBug(id, Direction.UP))
                     'v' -> Tile.BugTile(createBug(id, Direction.DOWN))
                     '<' -> Tile.BugTile(createBug(id, Direction.LEFT))
