@@ -1,5 +1,7 @@
 # LifeOfBugs
 
+_(This project is made for school and has no real purpose)_
+
 Tento projekt je upravená verze zadání ze školy.
 
 ## Spuštění
