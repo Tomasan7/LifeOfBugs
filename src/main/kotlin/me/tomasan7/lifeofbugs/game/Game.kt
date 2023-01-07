@@ -39,7 +39,7 @@ class Game
         }
     }
 
-    private val gameConfig: GameConfig
+    val gameConfig: GameConfig
     private val map: Array<Array<Tile>>
     private val allPositions: List<Pos>
 

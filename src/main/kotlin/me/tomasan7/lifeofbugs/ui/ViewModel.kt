@@ -61,7 +61,7 @@ class ViewModel
         playing = false
         playingJob?.cancel()
         cycleJob?.cancel()
-        game.setRandomBugs(100)
+        game.setRandomBugs(game.gameConfig.size)
         update()
     }
 
